@@ -16,3 +16,14 @@ todolist
 * Sequence
 * CallBack
 * RepeatForever
+
+
+roadmap
+===============
+
+
+1. 实现绝大部分 cocos2d-x Action 机制的 API
+2. 精简接口和内部实现方式，优化性能，和 Egret 更好的集成
+3. 分离 cocos2d-x style API 和 egret style API
+4. 简易教程文档
+5. 作为标准扩展集成进 Egret-Core
