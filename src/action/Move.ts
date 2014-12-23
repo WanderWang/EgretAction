@@ -20,10 +20,11 @@ module egret.action {
             this._previousPosition = cc.p(0, 0);
         }
 
-        public initWithDuration(duration:number, position) {
+        public initWithDuration(duration:number, position):boolean {
             super.initWithDuration(duration,position);
             this._positionDelta.x = position.x;
             this._positionDelta.y = position.y;
+            return true;
 
 
         }

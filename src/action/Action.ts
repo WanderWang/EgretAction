@@ -102,6 +102,14 @@ module egret.action {
         public _duration:number = 0;
 
 
+        /** get duration in seconds of the action
+         *
+         * @return {Number}
+         */
+        public getDuration() {
+            return this._duration;
+        }
+
     }
 
 

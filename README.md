@@ -21,6 +21,7 @@ todolist
 * Sequence
 * CallBack
 * RepeatForever
+* Ease
 
 
 roadmap

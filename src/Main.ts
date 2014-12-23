@@ -95,6 +95,21 @@ class Main extends egret.DisplayObjectContainer{
         manager.addAction(action, sky, false);
 
 
+
+        var delay = egret.action.DelayTime.create(1);
+        var call = egret.action.CallFunc.create(function(){
+            console.log ("complete")
+        }, this)
+
+        var seq = egret.action.Sequence.create(
+            [delay,call
+            ]
+        );
+
+        manager.addAction(seq,sky,false);
+
+
+
         egret.Ticker.getInstance().register(function(dt){
             manager.update(dt / 1000);
         },this)
