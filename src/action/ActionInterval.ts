@@ -130,7 +130,7 @@ module egret.action {
         }
 
 
-        public update(dt):void{
+        public update(dt):void {
 //            dt = this._computeEaseTime(dt);todo
             var new_t, found = 0;
             var locSplit = this._split, locActions = this._actions, locLast = this._last;
@@ -183,7 +183,7 @@ module egret.action {
          * @return {Boolean}
          */
         public initWithTwoActions(actionOne, actionTwo) {
-            if(!actionOne || !actionTwo)
+            if (!actionOne || !actionTwo)
                 throw "cc.Sequence.initWithTwoActions(): arguments must all be non nil";
 
             var d = actionOne._duration + actionTwo._duration;
@@ -202,6 +202,19 @@ module egret.action {
             super.startWithTarget(target);
             this._split = this._actions[0].getDuration() / this._duration;
             this._last = -1;
+        }
+
+
+        /**
+         * stop the action.
+         */
+        public stop() {
+            // Issue #1305
+            if (this._last !== -1) {
+                this._actions[this._last].stop();
+            }
+            super.stop();
+
         }
 
         private static _actionOneTwo(actionOne, actionTwo) {
