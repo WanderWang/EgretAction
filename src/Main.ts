@@ -81,7 +81,6 @@ class Main extends egret.DisplayObjectContainer{
      */
     private createGameScene():void{
 
-        new egret.action.Manager();
 
         var sky:egret.Bitmap = this.createBitmapByName("bgImage");
         this.addChild(sky);
@@ -89,6 +88,16 @@ class Main extends egret.DisplayObjectContainer{
         var stageH:number = this.stage.stageHeight;
         sky.width = stageW;
         sky.height = stageH;
+
+
+        var manager = new egret.action.Manager();
+        var action = egret.action.MoveBy.create(1,cc.p(100,100));
+        manager.addAction(action, sky, false);
+
+
+        egret.Ticker.getInstance().register(function(dt){
+            manager.update(dt / 1000);
+        },this)
 
         var topMask:egret.Shape = new egret.Shape();
         topMask.graphics.beginFill(0x000000, 0.5);

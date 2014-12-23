@@ -1,0 +1,11 @@
+{
+    "name": "action",
+    "dependence": ["core"],
+    "source":"src/action/",
+    "file_list": [
+        "Manager.ts",
+        "Action.ts",
+        "ActionInterval.ts",
+        "Move.ts"
+    ]
+}

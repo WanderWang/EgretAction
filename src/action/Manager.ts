@@ -73,7 +73,7 @@ module egret.action {
         /**
          * @param {Number} dt delta time in seconds
          */
-        private update(dt) {
+        public update(dt) {
             var locTargets = this._arrayTargets , locCurrTarget;
             for (var elt = 0; elt < locTargets.length; elt++) {
                 this._currentTarget = locTargets[elt];
@@ -121,7 +121,7 @@ module egret.action {
         /** Removes an action given an action reference.
          * @param {cc.Action} action
          */
-        public removeAction(action) {
+        public removeAction(action:Action) {
             // explicit null handling
             if (action == null)
                 return;

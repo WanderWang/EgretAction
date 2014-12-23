@@ -13,13 +13,21 @@ module egret.action {
 
 
         private originalTarget:any;
-        private target:any;
+        public target:any;
         private tag:number;
 
         constructor() {
             this.originalTarget = null;
             this.target = null;
             this.tag = ACTION_TAG_INVALID;
+        }
+
+        /**
+         *
+         * @return {cc.Node}
+         */
+        public getOriginalTarget() {
+            return this.originalTarget;
         }
 
 
@@ -85,11 +93,10 @@ module egret.action {
 
         }
 
-
     }
 
 
-    export class FiniteTimeAction {
+    export class FiniteTimeAction extends Action {
 
 
         public _duration:number = 0;
