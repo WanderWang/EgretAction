@@ -171,6 +171,42 @@ module egret.action {
         }
 
 
+        /** Removes all actions from a certain target. <br/>
+         * All the actions that belongs to the target will be removed.
+         * @param {object} target
+         * @param {boolean} forceDelete
+         */
+        public removeAllActionsFromTarget(target, forceDelete) {
+            // explicit null handling
+            if (target == null)
+                return;
+            var element = this._hashTargets[target.__instanceId];
+            if (element) {
+                if (element.actions.indexOf(element.currentAction) !== -1 && !(element.currentActionSalvaged))
+                    element.currentActionSalvaged = true;
+
+                element.actions.length = 0;
+                if (this._currentTarget == element && !forceDelete) {
+                    this._currentTargetSalvaged = true;
+                } else {
+                    this._deleteHashElement(element);
+                }
+            }
+        }
+
+        /**
+         * Removes all actions from all the targets.
+         */
+        public removeAllActions() {
+            var locTargets = this._arrayTargets;
+            for (var i = 0; i < locTargets.length; i++) {
+                var element = locTargets[i];
+                if (element)
+                    this.removeAllActionsFromTarget(element.target, true);
+            }
+        }
+
+
     }
 
 

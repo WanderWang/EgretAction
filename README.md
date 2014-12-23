@@ -12,5 +12,7 @@ Egret Action 是一套模仿了 cocos2d-x action 机制的动作 API
 todolist
 ================
 
-* MoveTo
-* 
+* 集成 Node
+* Sequence
+* CallBack
+* RepeatForever
