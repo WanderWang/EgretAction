@@ -38,7 +38,7 @@ module egret.action {
          * @param {cc.Node} target
          * @param {Boolean} paused
          */
-        public addAction(action, target, paused) {
+        public addAction(action, target, paused?:boolean) {
             if (!action)
                 throw "cc.ActionManager.addAction(): action must be non-null";
             if (!target)
@@ -142,13 +142,32 @@ module egret.action {
         }
 
 
-        private _deleteHashElement(element) {
+        private _deleteHashElement(element:HashElement) {
             if (element) {
                 delete this._hashTargets[element.target.__instanceId];
                 arrayRemoveObject(this._arrayTargets, element);
                 element.actions = null;
                 element.target = null;
             }
+        }
+
+
+        /** Pauses the target: all running actions and newly added actions will be paused.
+         * @param {object} target
+         */
+        public pauseTarget(target) {
+            var element:HashElement = this._hashTargets[target.__instanceId];
+            if (element)
+                element.paused = true;
+        }
+
+        /** Resumes the target. All queued actions will be resumed.
+         * @param {object} target
+         */
+        public resumeTarget(target) {
+            var element:HashElement = this._hashTargets[target.__instanceId];
+            if (element)
+                element.paused = false;
         }
 
 
