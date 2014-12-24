@@ -29,7 +29,7 @@ module egret.action {
          * @param {Number} d duration in seconds
          * @return {Boolean}
          */
-        public initWithDuration(d, param?):boolean {//todo
+        public initWithDuration(d, ...args):boolean {//todo
             this._duration = (d === 0) ? FLT_EPSILON : d;
             // prevent division by 0
             // This comparison could be in step:, but it might decrease the performance
@@ -217,7 +217,7 @@ module egret.action {
 
         }
 
-        private static _actionOneTwo(actionOne, actionTwo) {
+        public static _actionOneTwo(actionOne, actionTwo) {
             var sequence = new Sequence();
             sequence.initWithTwoActions(actionOne, actionTwo);
             return sequence;
@@ -234,6 +234,226 @@ module egret.action {
                     prev = Sequence._actionOneTwo(prev, paramArray[i]);
             }
             return prev;
+        }
+    }
+
+    export class Spawn extends ActionInterval {
+
+        _one:Action;
+        _two:Action;
+
+        constructor() {
+            super();
+
+            this._one = null;
+            this._two = null;
+        }
+
+        /** initializes the Spawn action with the 2 actions to spawn
+         * @param {cc.FiniteTimeAction} action1
+         * @param {cc.FiniteTimeAction} action2
+         * @return {Boolean}
+         */
+        initWithTwoActions(action1, action2) {
+            if (!action1 || !action2)
+                throw "cc.Spawn.initWithTwoActions(): arguments must all be non null";
+
+            var ret = false;
+
+            var d1 = action1.getDuration();
+            var d2 = action2.getDuration();
+
+            if (this.initWithDuration(Math.max(d1, d2))) {
+                this._one = action1;
+                this._two = action2;
+
+                if (d1 > d2) {
+                    this._two = Sequence._actionOneTwo(action2, DelayTime.create(d1 - d2));
+                } else if (d1 < d2) {
+                    this._one = Sequence._actionOneTwo(action1, DelayTime.create(d2 - d1));
+                }
+
+                ret = true;
+            }
+            return ret;
+        }
+
+
+        /**
+         * @param {cc.Node} target
+         */
+        startWithTarget(target) {
+            ActionInterval.prototype.startWithTarget.call(this, target);
+            this._one.startWithTarget(target);
+            this._two.startWithTarget(target);
+        }
+
+        /**
+         * Stop the action
+         */
+        stop() {
+            this._one.stop();
+            this._two.stop();
+
+            super.stop();
+        }
+
+        /**
+         * @param {Number} time time in seconds
+         */
+        update(time) {
+            if (this._one)
+                this._one.update(time);
+            if (this._two)
+                this._two.update(time);
+        }
+
+
+        static create(tempArray) {
+            var paramArray = (tempArray instanceof Array) ? tempArray : arguments;
+            if ((paramArray.length > 0) && (paramArray[paramArray.length - 1] == null))
+                console.log("parameters should not be ending with null in Javascript");
+
+            var prev = paramArray[0];
+            for (var i = 1; i < paramArray.length; i++) {
+                if (paramArray[i] != null) {
+                    var spawn = new Spawn();
+                    spawn.initWithTwoActions(prev, paramArray[i]);
+                    prev = spawn;
+                }
+            }
+            return prev;
+        }
+    }
+
+    export class Repeat extends ActionInterval {
+
+        _repeatTimes:number;
+        _total:number;
+        _nextDt:number;
+        _actionInstant:boolean;
+        _innerAction;
+
+        constructor() {
+            super();
+            this._repeatTimes = 0;
+            this._total = 0;
+            this._nextDt = 0;
+            this._actionInstant = false;
+            this._innerAction = null;
+        }
+
+        /**
+         * @param {cc.FiniteTimeAction} action
+         * @param {Number} times
+         * @return {Boolean}
+         */
+        initWithAction(action, times) {
+            var duration = action.getDuration() * times;
+
+            if (this.initWithDuration(duration)) {
+                this._repeatTimes = times;
+                this._innerAction = action;
+                if (action instanceof egret.action.ActionInstant)
+                    this._repeatTimes -= 1;
+                this._total = 0;
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * @param {cc.Node} target
+         */
+        startWithTarget(target) {
+            this._total = 0;
+            this._nextDt = this._innerAction.getDuration() / this._duration;
+            super.startWithTarget(target);
+            this._innerAction.startWithTarget(target);
+        }
+
+        /**
+         * stop the action
+         */
+        stop() {
+            this._innerAction.stop();
+            super.stop();
+        }
+
+        /**
+         * @param {Number} time time in seconds
+         */
+        update(time) {
+            var locInnerAction = this._innerAction;
+            var locDuration = this._duration;
+            var locTimes = this._repeatTimes;
+            var locNextDt = this._nextDt;
+
+            if (time >= locNextDt) {
+                while (time > locNextDt && this._total < locTimes) {
+                    locInnerAction.update(1);
+                    this._total++;
+                    locInnerAction.stop();
+                    locInnerAction.startWithTarget(this.target);
+                    locNextDt += locInnerAction.getDuration() / locDuration;
+                    this._nextDt = locNextDt;
+                }
+
+                // fix for issue #1288, incorrect end value of repeat
+                if (time >= 1.0 && this._total < locTimes)
+                    this._total++;
+
+                // don't set a instantaction back or update it, it has no use because it has no duration
+                if (this._actionInstant) {
+                    if (this._total == locTimes) {
+                        locInnerAction.update(1);
+                        locInnerAction.stop();
+                    } else {
+                        // issue #390 prevent jerk, use right update
+                        locInnerAction.update(time - (locNextDt - locInnerAction.getDuration() / locDuration));
+                    }
+                }
+            } else {
+                locInnerAction.update((time * locTimes) % 1.0);
+            }
+        }
+
+        /**
+         * @return {Boolean}
+         */
+        isDone() {
+            return this._total == this._repeatTimes;
+        }
+
+        /**
+         * @param {cc.FiniteTimeAction} action
+         */
+        setInnerAction(action) {
+            if (this._innerAction != action) {
+                this._innerAction = action;
+            }
+        }
+
+        /**
+         * @return {cc.FiniteTimeAction}
+         */
+        getInnerAction() {
+            return this._innerAction;
+        }
+
+        static create(action, times) {
+            var repeat = new Repeat();
+            repeat.initWithAction(action, times);
+            return repeat;
+        }
+    }
+
+    export class RepeatForever extends Repeat {
+
+        static create(action) {
+            var repeat = new RepeatForever();
+            repeat.initWithAction(action, 99999999);
+            return repeat;
         }
     }
 }

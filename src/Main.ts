@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class Main extends egret.DisplayObjectContainer{
+class Main extends egret.DisplayObjectContainer {
 
     /**
      * 加载进度界面
@@ -34,86 +34,115 @@ class Main extends egret.DisplayObjectContainer{
 
     public constructor() {
         super();
-        this.addEventListener(egret.Event.ADDED_TO_STAGE,this.onAddToStage,this);
+        this.addEventListener(egret.Event.ADDED_TO_STAGE, this.onAddToStage, this);
     }
 
-    private onAddToStage(event:egret.Event){
+    private onAddToStage(event:egret.Event) {
         //设置加载进度界面
-        this.loadingView  = new LoadingUI();
+        this.loadingView = new LoadingUI();
         this.stage.addChild(this.loadingView);
 
         //初始化Resource资源加载库
-        RES.addEventListener(RES.ResourceEvent.CONFIG_COMPLETE,this.onConfigComplete,this);
-        RES.loadConfig("resource/resource.json","resource/");
+        RES.addEventListener(RES.ResourceEvent.CONFIG_COMPLETE, this.onConfigComplete, this);
+        RES.loadConfig("resource/resource.json", "resource/");
     }
+
     /**
      * 配置文件加载完成,开始预加载preload资源组。
      */
-    private onConfigComplete(event:RES.ResourceEvent):void{
-        RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE,this.onConfigComplete,this);
-        RES.addEventListener(RES.ResourceEvent.GROUP_COMPLETE,this.onResourceLoadComplete,this);
-        RES.addEventListener(RES.ResourceEvent.GROUP_PROGRESS,this.onResourceProgress,this);
+    private onConfigComplete(event:RES.ResourceEvent):void {
+        RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE, this.onConfigComplete, this);
+        RES.addEventListener(RES.ResourceEvent.GROUP_COMPLETE, this.onResourceLoadComplete, this);
+        RES.addEventListener(RES.ResourceEvent.GROUP_PROGRESS, this.onResourceProgress, this);
         RES.loadGroup("preload");
     }
+
     /**
      * preload资源组加载完成
      */
     private onResourceLoadComplete(event:RES.ResourceEvent):void {
-        if(event.groupName=="preload"){
+        if (event.groupName == "preload") {
             this.stage.removeChild(this.loadingView);
-            RES.removeEventListener(RES.ResourceEvent.GROUP_COMPLETE,this.onResourceLoadComplete,this);
-            RES.removeEventListener(RES.ResourceEvent.GROUP_PROGRESS,this.onResourceProgress,this);
+            RES.removeEventListener(RES.ResourceEvent.GROUP_COMPLETE, this.onResourceLoadComplete, this);
+            RES.removeEventListener(RES.ResourceEvent.GROUP_PROGRESS, this.onResourceProgress, this);
             this.createGameScene();
         }
     }
+
     /**
      * preload资源组加载进度
      */
     private onResourceProgress(event:RES.ResourceEvent):void {
-        if(event.groupName=="preload"){
-            this.loadingView.setProgress(event.itemsLoaded,event.itemsTotal);
+        if (event.groupName == "preload") {
+            this.loadingView.setProgress(event.itemsLoaded, event.itemsTotal);
         }
     }
 
     private textContainer:egret.Sprite;
+
     /**
      * 创建游戏场景
      */
-    private createGameScene():void{
+    private createGameScene():void {
 
 
-        var sky:egret.Bitmap = this.createBitmapByName("bgImage");
+        var sky:egret.Bitmap = this.createBitmapByName("egretIcon");
         this.addChild(sky);
+        sky.anchorX = 0.5;
+        sky.anchorY = 0.5;
+        sky.scaleX = 0.55;
+        sky.scaleY = 0.55;
         var stageW:number = this.stage.stageWidth;
         var stageH:number = this.stage.stageHeight;
-        sky.width = stageW;
-        sky.height = stageH;
+//        sky.width = stageW;
+//        sky.height = stageH;
 
 
         var manager = new egret.action.Manager();
-        var action = egret.action.MoveBy.create(1,cc.p(100,100));
-        manager.addAction(action, sky, false);
+        var action1 = egret.action.MoveTo.create(2, cc.p(100, 300));
+//        manager.addAction(action1, sky, false);
 
+        var action2 = egret.action.RotateBy.create(2, 360);
+//        manager.addAction(action2, sky, false);
 
+        var action3 = egret.action.ScaleTo.create(2, 0.4);
+//        manager.addAction(action3, sky, false);
+
+        var action4 = egret.action.JumpTo.create(2, cc.p(300, 200), -100, 4);
+
+        var action5:egret.action.FadeTo = egret.action.FadeTo.create(2, 0.8);
+
+        var action6:egret.action.FadeOut = egret.action.FadeOut.create(2);
+
+        var action7:egret.action.FadeIn = egret.action.FadeIn.create(2);
 
         var delay = egret.action.DelayTime.create(1);
-        var call = egret.action.CallFunc.create(function(){
-            console.log ("complete")
+        var call = egret.action.CallFunc.create(function () {
+            console.log("complete")
         }, this)
 
-        var seq = egret.action.Sequence.create(
-            [delay,call
+
+//        var action1 = egret.action.MoveTo.create(2, cc.p(100, 300));
+//        var action3 = egret.action.ScaleTo.create(2, 0.4);
+//        var action2 = egret.action.MoveTo.create(2, cc.p(0, 0));
+//        var action4 = egret.action.ScaleTo.create(2, 1.4);
+
+
+        var seq = egret.action.Spawn.create(
+            [action4
             ]
         );
 
-        manager.addAction(seq,sky,false);
+        var repeat = egret.action.RepeatForever.create(seq);
+
+        manager.addAction(repeat, sky, false);
 
 
-
-        egret.Ticker.getInstance().register(function(dt){
+        egret.Ticker.getInstance().register(function (dt) {
             manager.update(dt / 1000);
-        },this)
+        }, this);
 
+        return;
         var topMask:egret.Shape = new egret.Shape();
         topMask.graphics.beginFill(0x000000, 0.5);
         topMask.graphics.drawRect(0, 0, stageW, stageH);
@@ -150,8 +179,9 @@ class Main extends egret.DisplayObjectContainer{
         this.textContainer = textContainer;
 
         //根据name关键字，异步获取一个json配置文件，name属性请参考resources/resource.json配置文件的内容。
-        RES.getResAsync("description",this.startAnimation,this)
+        RES.getResAsync("description", this.startAnimation, this)
     }
+
     /**
      * 根据name关键字创建一个Bitmap对象。name属性请参考resources/resource.json配置文件的内容。
      */
@@ -161,14 +191,15 @@ class Main extends egret.DisplayObjectContainer{
         result.texture = texture;
         return result;
     }
+
     /**
      * 描述文件加载成功，开始播放动画
      */
-    private startAnimation(result:Array<any>):void{
+    private startAnimation(result:Array<any>):void {
         var textContainer:egret.Sprite = this.textContainer;
         var count:number = -1;
         var self:any = this;
-        var change:Function = function() {
+        var change:Function = function () {
             count++;
             if (count >= result.length) {
                 count = 0;
@@ -178,14 +209,15 @@ class Main extends egret.DisplayObjectContainer{
             self.changeDescription(textContainer, lineArr);
 
             var tw = egret.Tween.get(textContainer);
-            tw.to({"alpha":1}, 200);
+            tw.to({"alpha": 1}, 200);
             tw.wait(2000);
-            tw.to({"alpha":0}, 200);
+            tw.to({"alpha": 0}, 200);
             tw.call(change, this);
         }
 
         change();
     }
+
     /**
      * 切换描述内容
      */

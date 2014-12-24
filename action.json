@@ -5,7 +5,13 @@
     "file_list": [
         "Manager.ts",
         "Action.ts",
+        "ActionInstant.ts",
         "ActionInterval.ts",
-        "Move.ts"
+        "Move.ts",
+        "Scale.ts",
+        "Skew.ts",
+        "Jump.ts",
+        "Fade.ts",
+        "Rotate.ts"
     ]
 }
